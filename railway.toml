@@ -1,0 +1,44 @@
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "Dockerfile"
+
+[deploy]
+startCommand = null
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 10
+
+[services.mautic-web]
+name = "Mautic Web"
+build = { dockerfilePath = "Dockerfile" }
+env = { DOCKER_MAUTIC_ROLE = "mautic_web" }
+ports = [80]
+
+[services.mautic-worker]
+name = "Mautic Worker"
+build = { dockerfilePath = "Dockerfile" }
+env = {
+    DOCKER_MAUTIC_ROLE = "mautic_worker",
+    DOCKER_MAUTIC_WORKERS_CONSUME_EMAIL = "2",
+    DOCKER_MAUTIC_WORKERS_CONSUME_HIT = "2",
+    DOCKER_MAUTIC_WORKERS_CONSUME_FAILED = "2"
+}
+
+[services.mautic-cron]
+name = "Mautic Cron"
+build = { dockerfilePath = "Dockerfile" }
+env = { DOCKER_MAUTIC_ROLE = "mautic_cron" }
+
+[services.mysql]
+name = "MySQL Database"
+image = "mysql:8"
+env = {
+    MYSQL_DATABASE = "mautic",
+    MYSQL_USER = "mautic"
+}
+volumes = ["/var/lib/mysql"]
+
+[volumes]
+mysql_data = { mountPath = "/var/lib/mysql" }
+mautic_config = { mountPath = "/var/www/html/app/config" }
+mautic_media = { mountPath = "/var/www/html/media" }
+mautic_logs = { mountPath = "/var/www/html/var/logs" } 

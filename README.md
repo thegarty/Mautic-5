@@ -10,6 +10,29 @@ This repository contains the configuration files needed to deploy Mautic 5 on Ra
 
 ## Deployment Steps
 
+### Option 1: Using Railway Template
+
+1. **Create a new Railway project**
+   - Go to [Railway Dashboard](https://railway.app/dashboard)
+   - Click "New Project"
+   - Select "Deploy from Template"
+   - Choose this template
+
+2. **Configure Variables**
+   The template will prompt you to set:
+   - `MYSQL_USER`: Database user (defaults to "mautic")
+   - `MYSQL_PASSWORD`: Database password (required)
+   - `MYSQL_ROOT_PASSWORD`: MySQL root password (required)
+
+3. **Deploy**
+   - Railway will automatically:
+     - Create all three Mautic services
+     - Set up the MySQL database
+     - Configure persistent storage
+     - Set up environment variables
+
+### Option 2: Manual Deployment
+
 1. **Create a new Railway project**
    - Go to [Railway Dashboard](https://railway.app/dashboard)
    - Click "New Project"
