@@ -1,0 +1,72 @@
+version: '3.8'
+
+services:
+  mautic_web:
+    build: .
+    ports:
+      - "8080:80"
+    environment:
+      - MYSQL_HOST=db
+      - MYSQL_PORT=3306
+      - MYSQL_DATABASE=mautic
+      - MYSQL_USER=mautic
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - DOCKER_MAUTIC_ROLE=mautic_web
+      - DOCKER_MAUTIC_RUN_MIGRATIONS=true
+    volumes:
+      - mautic_config:/var/www/html/app/config
+      - mautic_media:/var/www/html/media
+      - mautic_logs:/var/www/html/var/logs
+    depends_on:
+      - db
+
+  mautic_worker:
+    build: .
+    environment:
+      - MYSQL_HOST=db
+      - MYSQL_PORT=3306
+      - MYSQL_DATABASE=mautic
+      - MYSQL_USER=mautic
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - DOCKER_MAUTIC_ROLE=mautic_worker
+      - DOCKER_MAUTIC_WORKERS_CONSUME_EMAIL=2
+      - DOCKER_MAUTIC_WORKERS_CONSUME_HIT=2
+      - DOCKER_MAUTIC_WORKERS_CONSUME_FAILED=2
+    volumes:
+      - mautic_config:/var/www/html/app/config
+      - mautic_media:/var/www/html/media
+      - mautic_logs:/var/www/html/var/logs
+    depends_on:
+      - db
+
+  mautic_cron:
+    build: .
+    environment:
+      - MYSQL_HOST=db
+      - MYSQL_PORT=3306
+      - MYSQL_DATABASE=mautic
+      - MYSQL_USER=mautic
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - DOCKER_MAUTIC_ROLE=mautic_cron
+    volumes:
+      - mautic_config:/var/www/html/app/config
+      - mautic_media:/var/www/html/media
+      - mautic_logs:/var/www/html/var/logs
+    depends_on:
+      - db
+
+  db:
+    image: mysql:8
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=mautic
+      - MYSQL_USER=mautic
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+    volumes:
+      - db_data:/var/lib/mysql
+
+volumes:
+  mautic_config:
+  mautic_media:
+  mautic_logs:
+  db_data: 
