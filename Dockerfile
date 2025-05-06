@@ -20,13 +20,7 @@ RUN apt-get update && apt-get install -y \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Create a temporary directory for the Mautic installation
-RUN mkdir -p /tmp/mautic
-
-# Copy the entire Mautic installation to the temporary directory
-RUN cp -r /var/www/html/* /tmp/mautic/
-
-# Create necessary directories in the volume
+# Create necessary directories
 RUN mkdir -p /var/www/html/app/config \
     /var/www/html/media \
     /var/www/html/var/logs \
@@ -37,43 +31,20 @@ RUN mkdir -p /var/www/html/app/config \
     /var/www/html/themes \
     /var/www/html/plugins
 
-# Add initialization script
-COPY init.sh /usr/local/bin/init.sh
-RUN chmod +x /usr/local/bin/init.sh
-
-# Add debug script
-COPY debug.sh /usr/local/bin/debug.sh
-RUN chmod +x /usr/local/bin/debug.sh
-
 # Enable Apache debug logging
 RUN echo "LogLevel debug" >> /etc/apache2/apache2.conf && \
     echo "ServerName localhost" >> /etc/apache2/apache2.conf
 
-# Create a health check script
-COPY healthcheck.sh /usr/local/bin/healthcheck.sh
-RUN chmod +x /usr/local/bin/healthcheck.sh
-
-# Create a startup script
-COPY start.sh /usr/local/bin/start.sh
-RUN chmod +x /usr/local/bin/start.sh
-
-# Create a simple health check file
-RUN echo "<?php echo 'OK'; ?>" > /var/www/html/public/s/health && \
+# Create health check endpoint
+RUN echo "<?php header('HTTP/1.1 200 OK'); echo 'OK'; ?>" > /var/www/html/public/s/health && \
     chown www-data:www-data /var/www/html/public/s/health && \
     chmod 644 /var/www/html/public/s/health
-
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost/s/health || exit 1
-
-# Use start script as entrypoint
-ENTRYPOINT ["/usr/local/bin/start.sh"]
-CMD ["apache2-foreground"]
-
-# Create health check endpoint
-RUN echo "<?php header('HTTP/1.1 200 OK'); echo 'OK'; ?>" > /var/www/html/s/health.php
 
 # Set proper permissions
 RUN chown -R www-data:www-data /var/www/html
 
 # Expose port 80
 EXPOSE 80
+
+# Use Apache's default command
+CMD ["apache2-foreground"]
