@@ -43,6 +43,16 @@ else
     exit 1
 fi
 
+# Check if this is first run
+log_step "Checking if this is first run..."
+if [ ! -f /var/www/html/app/config/local.php ]; then
+    log_info "First run detected, copying Mautic files..."
+    cp -r /tmp/mautic/* /var/www/html/
+    log_success "Mautic files copied successfully"
+else
+    log_info "Not first run, skipping file copy"
+fi
+
 # Run initialization script
 log_step "Running initialization script..."
 if /usr/local/bin/init.sh; then
@@ -55,10 +65,26 @@ fi
 # Create health check endpoint
 log_step "Creating health check endpoint..."
 mkdir -p /var/www/html/public/s
-echo "<?php echo 'OK'; ?>" > /var/www/html/public/s/health
+cat > /var/www/html/public/s/health << 'EOF'
+<?php
+header('Content-Type: text/plain');
+echo "OK\n";
+EOF
 chown www-data:www-data /var/www/html/public/s/health
 chmod 644 /var/www/html/public/s/health
 log_success "Health check endpoint created at /var/www/html/public/s/health"
+
+# Test health check endpoint
+log_step "Testing health check endpoint..."
+if curl -s http://localhost/s/health | grep -q "OK"; then
+    log_success "Health check endpoint is working"
+else
+    log_error "Health check endpoint test failed"
+    log_debug "Directory contents of /var/www/html/public/s/:"
+    ls -la /var/www/html/public/s/
+    log_debug "Contents of health check file:"
+    cat /var/www/html/public/s/health
+fi
 
 # Set proper permissions
 log_step "Setting permissions..."
@@ -125,5 +151,15 @@ log_debug "Apache configuration:"
 apache2ctl -S
 log_debug "Loaded modules:"
 apache2ctl -M
+
+# Final health check test
+log_step "Performing final health check test..."
+if curl -s http://localhost/s/health | grep -q "OK"; then
+    log_success "Final health check passed"
+else
+    log_error "Final health check failed"
+    log_debug "Apache error log:"
+    tail -n 10 /var/log/apache2/error.log
+fi
 
 exec "$@" 
