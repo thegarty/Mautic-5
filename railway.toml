@@ -9,6 +9,8 @@ restartPolicyMaxRetries = 10
 [services.mautic-web]
 name = "Mautic Web"
 build = { dockerfilePath = "Dockerfile" }
+image = "mautic/mautic:5-apache"
+
 env = {
     DOCKER_MAUTIC_ROLE = "mautic_web",
     MAUTIC_DB_HOST = "${{MySQL.MYSQLHOST}}",
@@ -16,20 +18,31 @@ env = {
     MAUTIC_DB_NAME = "${{MySQL.MYSQLDATABASE}}",
     MAUTIC_DB_USER = "${{MySQL.MYSQLUSER}}",
     MAUTIC_DB_PASSWORD = "${{MySQL.MYSQLPASSWORD}}",
+
+    # Optional PHP tuning
     PHP_INI_VALUE_DATE_TIMEZONE = "UTC",
     PHP_INI_VALUE_MEMORY_LIMIT = "512M",
     PHP_INI_VALUE_UPLOAD_MAX_FILESIZE = "512M",
     PHP_INI_VALUE_POST_MAX_FILESIZE = "512M",
     PHP_INI_VALUE_MAX_EXECUTION_TIME = "300",
+
+    # Run DB migrations automatically on first start
     DOCKER_MAUTIC_RUN_MIGRATIONS = "true"
 }
+
 ports = [80]
-# Railway only allows one volume per service. Persist config only.
-volumes = ["mautic_config:/var/www/html/app/config"]
+
+# Mount only safe, non-core paths to ensure persistence without breaking core
+volumes = [
+    "mautic_config:/var/www/html/app/config",
+    "mautic_media:/var/www/html/media",
+    "mautic_themes:/var/www/html/themes",
+    "mautic_plugins:/var/www/html/plugins"
+]
 
 [services.mysql]
 name = "MySQL Database"
-image = "mysql:8"
+image = "mysql:8"  # use mysql:8 for compatibility with Mautic 5
 env = {
     MYSQL_DATABASE = "mautic",
     MYSQL_USER = "mautic",
@@ -40,4 +53,8 @@ volumes = ["mysql_data:/var/lib/mysql"]
 
 [volumes]
 mysql_data = { mountPath = "/var/lib/mysql" }
-mautic_config = { mountPath = "/var/www/html/app/config" } 
+
+mautic_config = { mountPath = "/var/www/html/app/config" }
+mautic_media = { mountPath = "/var/www/html/media" }
+mautic_themes = { mountPath = "/var/www/html/themes" }
+mautic_plugins = { mountPath = "/var/www/html/plugins" }
