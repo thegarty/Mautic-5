@@ -21,10 +21,41 @@ env = {
     MAUTIC_DB_NAME = "${{MySQL.MYSQLDATABASE}}",
     MAUTIC_DB_USER = "${{MySQL.MYSQLUSER}}",
     MAUTIC_DB_PASSWORD = "${{MySQL.MYSQLPASSWORD}}",
-    DOCKER_MAUTIC_RUN_MIGRATIONS = "true"
+    DOCKER_MAUTIC_RUN_MIGRATIONS = "true",
+    MAUTIC_MESSENGER_TRANSPORT_DSN = "doctrine://default?queue_name=mautic_messages"
 }
 
 ports = [80]
+
+[services.mautic-worker]
+name = "Mautic Worker"
+build = { dockerfilePath = "Dockerfile" }
+image = "mautic/mautic:5-apache"
+
+env = {
+    DOCKER_MAUTIC_ROLE = "mautic_worker",
+    MAUTIC_DB_HOST = "${{MySQL.MYSQLHOST}}",
+    MAUTIC_DB_PORT = "${{MySQL.MYSQLPORT}}",
+    MAUTIC_DB_NAME = "${{MySQL.MYSQLDATABASE}}",
+    MAUTIC_DB_USER = "${{MySQL.MYSQLUSER}}",
+    MAUTIC_DB_PASSWORD = "${{MySQL.MYSQLPASSWORD}}",
+    MAUTIC_MESSENGER_TRANSPORT_DSN = "doctrine://default?queue_name=mautic_messages"
+}
+
+[services.mautic-cron]
+name = "Mautic Cron"
+build = { dockerfilePath = "Dockerfile" }
+image = "mautic/mautic:5-apache"
+
+env = {
+    DOCKER_MAUTIC_ROLE = "mautic_cron",
+    MAUTIC_DB_HOST = "${{MySQL.MYSQLHOST}}",
+    MAUTIC_DB_PORT = "${{MySQL.MYSQLPORT}}",
+    MAUTIC_DB_NAME = "${{MySQL.MYSQLDATABASE}}",
+    MAUTIC_DB_USER = "${{MySQL.MYSQLUSER}}",
+    MAUTIC_DB_PASSWORD = "${{MySQL.MYSQLPASSWORD}}",
+    MAUTIC_MESSENGER_TRANSPORT_DSN = "doctrine://default?queue_name=mautic_messages"
+}
 
 [services.mysql]
 name = "MySQL Database"

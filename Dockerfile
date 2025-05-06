@@ -43,8 +43,19 @@ RUN echo "<?php header('HTTP/1.1 200 OK'); echo 'OK'; ?>" > /var/www/html/public
 # Set proper permissions
 RUN chown -R www-data:www-data /var/www/html
 
+# Create startup script
+RUN echo '#!/bin/bash\n\
+if [ "$DOCKER_MAUTIC_ROLE" = "mautic_web" ]; then\n\
+    exec apache2-foreground\n\
+elif [ "$DOCKER_MAUTIC_ROLE" = "mautic_worker" ]; then\n\
+    exec php /var/www/html/bin/console messenger:consume --time-limit=3600\n\
+elif [ "$DOCKER_MAUTIC_ROLE" = "mautic_cron" ]; then\n\
+    exec php /var/www/html/bin/console mautic:cron:run\n\
+fi' > /usr/local/bin/start.sh && \
+    chmod +x /usr/local/bin/start.sh
+
 # Expose port 80
 EXPOSE 80
 
-# Use Apache's default command
-CMD ["apache2-foreground"]
+# Use our startup script
+ENTRYPOINT ["/usr/local/bin/start.sh"]
