@@ -9,7 +9,20 @@ restartPolicyMaxRetries = 10
 [services.mautic-web]
 name = "Mautic Web"
 build = { dockerfilePath = "Dockerfile" }
-env = { DOCKER_MAUTIC_ROLE = "mautic_web" }
+env = {
+    DOCKER_MAUTIC_ROLE = "mautic_web",
+    MAUTIC_DB_HOST = "${{MySQL.MYSQLHOST}}",
+    MAUTIC_DB_PORT = "${{MySQL.MYSQLPORT}}",
+    MAUTIC_DB_NAME = "${{MySQL.MYSQLDATABASE}}",
+    MAUTIC_DB_USER = "${{MySQL.MYSQLUSER}}",
+    MAUTIC_DB_PASSWORD = "${{MySQL.MYSQLPASSWORD}}",
+    PHP_INI_VALUE_DATE_TIMEZONE = "UTC",
+    PHP_INI_VALUE_MEMORY_LIMIT = "512M",
+    PHP_INI_VALUE_UPLOAD_MAX_FILESIZE = "512M",
+    PHP_INI_VALUE_POST_MAX_FILESIZE = "512M",
+    PHP_INI_VALUE_MAX_EXECUTION_TIME = "300",
+    DOCKER_MAUTIC_RUN_MIGRATIONS = "true"
+}
 ports = [80]
 # Railway only allows one volume per service. Persist config only.
 volumes = ["mautic_config:/var/www/html/app/config"]
@@ -20,8 +33,8 @@ image = "mysql:8"
 env = {
     MYSQL_DATABASE = "mautic",
     MYSQL_USER = "mautic",
-    MYSQL_PASSWORD = "yourpassword",
-    MYSQL_ROOT_PASSWORD = "yourrootpassword"
+    MYSQL_PASSWORD = "${{MySQL.MYSQLPASSWORD}}",
+    MYSQL_ROOT_PASSWORD = "${{MySQL.MYSQL_ROOT_PASSWORD}}"
 }
 volumes = ["mysql_data:/var/lib/mysql"]
 
