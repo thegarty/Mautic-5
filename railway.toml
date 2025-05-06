@@ -3,6 +3,9 @@ builder = "DOCKERFILE"
 dockerfilePath = "Dockerfile"
 
 [deploy]
+startCommand = "apache2-foreground"
+healthcheckPath = "/"
+healthcheckTimeout = 100
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 10
 
@@ -32,13 +35,8 @@ env = {
 
 ports = [80]
 
-# Mount only safe, non-core paths to ensure persistence without breaking core
-volumes = [
-    "mautic_config:/var/www/html/app/config",
-    "mautic_media:/var/www/html/media",
-    "mautic_themes:/var/www/html/themes",
-    "mautic_plugins:/var/www/html/plugins"
-]
+# Single volume for the entire Mautic installation
+volumes = ["mautic_data:/var/www/html"]
 
 [services.mysql]
 name = "MySQL Database"
@@ -53,8 +51,4 @@ volumes = ["mysql_data:/var/lib/mysql"]
 
 [volumes]
 mysql_data = { mountPath = "/var/lib/mysql" }
-
-mautic_config = { mountPath = "/var/www/html/app/config" }
-mautic_media = { mountPath = "/var/www/html/media" }
-mautic_themes = { mountPath = "/var/www/html/themes" }
-mautic_plugins = { mountPath = "/var/www/html/plugins" }
+mautic_data = { mountPath = "/var/www/html" }

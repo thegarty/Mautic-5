@@ -43,9 +43,6 @@ RUN echo "LogLevel debug" >> /etc/apache2/apache2.conf
 COPY healthcheck.sh /usr/local/bin/healthcheck.sh
 RUN chmod +x /usr/local/bin/healthcheck.sh
 
-# Define volumes
-VOLUME ["/var/www/html/app/config", "/var/www/html/media", "/var/www/html/var/logs", "/var/www/html/var/cache"]
-
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD /usr/local/bin/healthcheck.sh
 
