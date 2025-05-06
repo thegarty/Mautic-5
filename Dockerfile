@@ -17,6 +17,7 @@ RUN apt-get update && apt-get install -y \
     vim \
     htop \
     procps \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
 # Create necessary directories and set permissions
@@ -26,6 +27,7 @@ RUN mkdir -p /var/www/html/app/config \
     /var/www/html/var/cache \
     /var/www/html/var/spool \
     /var/www/html/var/tmp \
+    /var/www/html/public/s \
     && chown -R www-data:www-data /var/www/html
 
 # Add initialization script
@@ -37,15 +39,20 @@ COPY debug.sh /usr/local/bin/debug.sh
 RUN chmod +x /usr/local/bin/debug.sh
 
 # Enable Apache debug logging
-RUN echo "LogLevel debug" >> /etc/apache2/apache2.conf
+RUN echo "LogLevel debug" >> /etc/apache2/apache2.conf && \
+    echo "ServerName localhost" >> /etc/apache2/apache2.conf
 
 # Create a health check script
 COPY healthcheck.sh /usr/local/bin/healthcheck.sh
 RUN chmod +x /usr/local/bin/healthcheck.sh
 
+# Create a startup script
+COPY start.sh /usr/local/bin/start.sh
+RUN chmod +x /usr/local/bin/start.sh
+
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD /usr/local/bin/healthcheck.sh
 
-# Use init script as entrypoint
-ENTRYPOINT ["/usr/local/bin/init.sh"]
+# Use start script as entrypoint
+ENTRYPOINT ["/usr/local/bin/start.sh"]
 CMD ["apache2-foreground"]
