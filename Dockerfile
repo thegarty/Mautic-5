@@ -19,13 +19,18 @@ RUN apt-get update && apt-get install -y \
     procps \
     && rm -rf /var/lib/apt/lists/*
 
-# Create necessary directories
+# Create necessary directories and set permissions
 RUN mkdir -p /var/www/html/app/config \
     /var/www/html/media \
-    /var/www/html/var/logs
+    /var/www/html/var/logs \
+    /var/www/html/var/cache \
+    /var/www/html/var/spool \
+    /var/www/html/var/tmp \
+    && chown -R www-data:www-data /var/www/html
 
-# Set proper permissions
-RUN chown -R www-data:www-data /var/www/html
+# Add initialization script
+COPY init.sh /usr/local/bin/init.sh
+RUN chmod +x /usr/local/bin/init.sh
 
 # Add debug script
 COPY debug.sh /usr/local/bin/debug.sh
@@ -38,5 +43,12 @@ RUN echo "LogLevel debug" >> /etc/apache2/apache2.conf
 COPY healthcheck.sh /usr/local/bin/healthcheck.sh
 RUN chmod +x /usr/local/bin/healthcheck.sh
 
+# Define volumes
+VOLUME ["/var/www/html/app/config", "/var/www/html/media", "/var/www/html/var/logs", "/var/www/html/var/cache"]
+
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD /usr/local/bin/healthcheck.sh
+
+# Use init script as entrypoint
+ENTRYPOINT ["/usr/local/bin/init.sh"]
+CMD ["apache2-foreground"]
