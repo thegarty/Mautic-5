@@ -11,33 +11,20 @@ name = "Mautic Web"
 build = { dockerfilePath = "Dockerfile" }
 env = { DOCKER_MAUTIC_ROLE = "mautic_web" }
 ports = [80]
-
-[services.mautic-worker]
-name = "Mautic Worker"
-build = { dockerfilePath = "Dockerfile" }
-env = {
-    DOCKER_MAUTIC_ROLE = "mautic_worker",
-    DOCKER_MAUTIC_WORKERS_CONSUME_EMAIL = "2",
-    DOCKER_MAUTIC_WORKERS_CONSUME_HIT = "2",
-    DOCKER_MAUTIC_WORKERS_CONSUME_FAILED = "2"
-}
-
-[services.mautic-cron]
-name = "Mautic Cron"
-build = { dockerfilePath = "Dockerfile" }
-env = { DOCKER_MAUTIC_ROLE = "mautic_cron" }
+# Railway only allows one volume per service. Persist config only.
+volumes = ["mautic_config:/var/www/html/app/config"]
 
 [services.mysql]
 name = "MySQL Database"
 image = "mysql:8"
 env = {
     MYSQL_DATABASE = "mautic",
-    MYSQL_USER = "mautic"
+    MYSQL_USER = "mautic",
+    MYSQL_PASSWORD = "yourpassword",
+    MYSQL_ROOT_PASSWORD = "yourrootpassword"
 }
-volumes = ["/var/lib/mysql"]
+volumes = ["mysql_data:/var/lib/mysql"]
 
 [volumes]
 mysql_data = { mountPath = "/var/lib/mysql" }
-mautic_config = { mountPath = "/var/www/html/app/config" }
-mautic_media = { mountPath = "/var/www/html/media" }
-mautic_logs = { mountPath = "/var/www/html/var/logs" } 
+mautic_config = { mountPath = "/var/www/html/app/config" } 
