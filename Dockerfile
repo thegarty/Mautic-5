@@ -68,3 +68,12 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
 # Use start script as entrypoint
 ENTRYPOINT ["/usr/local/bin/start.sh"]
 CMD ["apache2-foreground"]
+
+# Create health check endpoint
+RUN echo "<?php header('HTTP/1.1 200 OK'); echo 'OK'; ?>" > /var/www/html/s/health.php
+
+# Set proper permissions
+RUN chown -R www-data:www-data /var/www/html
+
+# Expose port 80
+EXPOSE 80

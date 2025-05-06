@@ -21,29 +21,14 @@ env = {
     MAUTIC_DB_NAME = "${{MySQL.MYSQLDATABASE}}",
     MAUTIC_DB_USER = "${{MySQL.MYSQLUSER}}",
     MAUTIC_DB_PASSWORD = "${{MySQL.MYSQLPASSWORD}}",
-
-    # Optional PHP tuning
-    PHP_INI_VALUE_DATE_TIMEZONE = "UTC",
-    PHP_INI_VALUE_MEMORY_LIMIT = "512M",
-    PHP_INI_VALUE_UPLOAD_MAX_FILESIZE = "512M",
-    PHP_INI_VALUE_POST_MAX_FILESIZE = "512M",
-    PHP_INI_VALUE_MAX_EXECUTION_TIME = "300",
-
-    # Run DB migrations automatically on first start
-    DOCKER_MAUTIC_RUN_MIGRATIONS = "true",
-    
-    # Debug settings
-    PHP_INI_VALUE_DISPLAY_ERRORS = "On",
-    PHP_INI_VALUE_ERROR_REPORTING = "E_ALL",
-    PHP_INI_VALUE_LOG_ERRORS = "On",
-    PHP_INI_VALUE_ERROR_LOG = "/var/www/html/var/logs/php_errors.log"
+    DOCKER_MAUTIC_RUN_MIGRATIONS = "true"
 }
 
 ports = [80]
 
 [services.mysql]
 name = "MySQL Database"
-image = "mysql:8"  # use mysql:8 for compatibility with Mautic 5
+image = "mysql:8"
 env = {
     MYSQL_DATABASE = "mautic",
     MYSQL_USER = "mautic",
