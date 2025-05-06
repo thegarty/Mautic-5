@@ -4,8 +4,8 @@ dockerfilePath = "Dockerfile"
 
 [deploy]
 startCommand = "apache2-foreground"
-healthcheckPath = "/"
-healthcheckTimeout = 100
+healthcheckPath = "/s/health"
+healthcheckTimeout = 300
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 10
 
@@ -30,7 +30,13 @@ env = {
     PHP_INI_VALUE_MAX_EXECUTION_TIME = "300",
 
     # Run DB migrations automatically on first start
-    DOCKER_MAUTIC_RUN_MIGRATIONS = "true"
+    DOCKER_MAUTIC_RUN_MIGRATIONS = "true",
+    
+    # Debug settings
+    PHP_INI_VALUE_DISPLAY_ERRORS = "On",
+    PHP_INI_VALUE_ERROR_REPORTING = "E_ALL",
+    PHP_INI_VALUE_LOG_ERRORS = "On",
+    PHP_INI_VALUE_ERROR_LOG = "/var/www/html/var/logs/php_errors.log"
 }
 
 ports = [80]
